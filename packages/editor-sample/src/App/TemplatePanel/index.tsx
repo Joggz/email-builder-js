@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useMemo } from 'react';
 
 import { MonitorOutlined, PhoneIphoneOutlined } from '@mui/icons-material';
 import { Box, Stack, SxProps, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
@@ -13,6 +13,7 @@ import {
 } from '../../documents/editor/EditorContext';
 import ToggleInspectorPanelButton from '../InspectorDrawer/ToggleInspectorPanelButton';
 import ToggleSamplesPanelButton from '../SamplesDrawer/ToggleSamplesPanelButton';
+import { renderToStaticMarkup } from '@usewaypoint/email-builder';
 
 import DownloadJson from './DownloadJson';
 import HtmlPanel from './HtmlPanel';
@@ -20,9 +21,15 @@ import ImportJson from './ImportJson';
 import JsonPanel from './JsonPanel';
 import MainTabsGroup from './MainTabsGroup';
 import ShareButton from './ShareButton';
+import ShareTemplate from './ShareTemplate'
+
 
 export default function TemplatePanel() {
   const document = useDocument();
+  const code = useMemo(() => renderToStaticMarkup(document, { rootBlockId: 'root' }), [document]);
+  console.log("code here ====>", code);
+
+  
   const selectedMainTab = useSelectedMainTab();
   const selectedScreenSize = useSelectedScreenSize();
 
@@ -66,11 +73,31 @@ export default function TemplatePanel() {
           </Box>
         );
       case 'html':
-        return <HtmlPanel />;
+        return <HtmlPanel ref={childARef} />;
       case 'json':
         return <JsonPanel />;
     }
   };
+
+  // copyHtml={copyHtmlCode}
+  const copyHtmlCode = (html: string) => {
+      console.log("html file=====>", html);
+      
+  }
+  const childARef = useRef<{ logProperty: () => void } | null>(null);
+
+   // Function to trigger logging in ChildA from Parent
+   const triggerChildALog = () => {
+   
+    if (childARef.current) {
+      childARef.current.logProperty();
+    }
+  };
+  
+  const shareHtmlFile = (code: string) => {
+      console.log("htmlFile template to send ====>", code);
+      
+  }
 
   return (
     <>
@@ -110,6 +137,7 @@ export default function TemplatePanel() {
               </ToggleButton>
             </ToggleButtonGroup>
             <ShareButton />
+            <ShareTemplate onTriggerLog={triggerChildALog}  shareFile={() => shareHtmlFile(code)} code={code}/>
           </Stack>
         </Stack>
         <ToggleInspectorPanelButton />
